@@ -1,6 +1,9 @@
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { connection } from 'next/server';
-import { getPostHogLogger } from '@/lib/posthog-logs';
+import {
+  flushPostHogLogsAfterResponse,
+  getPostHogLogger,
+} from '@/lib/posthog-logs';
 
 export const instant = false;
 
@@ -15,6 +18,7 @@ const Analytics = async () => {
       route: '/dashboard/analytics',
     },
   });
+  flushPostHogLogsAfterResponse();
 
   return <div>Analytics</div>;
 };

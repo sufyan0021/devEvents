@@ -1,6 +1,9 @@
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { Suspense } from 'react';
-import { getPostHogLogger } from '@/lib/posthog-logs';
+import {
+  flushPostHogLogsAfterResponse,
+  getPostHogLogger,
+} from '@/lib/posthog-logs';
 
 const UserData = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
@@ -13,6 +16,7 @@ const UserData = async ({ params }: { params: Promise<{ id: string }> }) => {
       route: '/dashboard/users/[id]',
     },
   });
+  flushPostHogLogsAfterResponse();
 
   return <div>UserDetails #{id}</div>;
 };

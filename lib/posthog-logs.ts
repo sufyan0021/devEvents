@@ -1,6 +1,7 @@
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { BatchLogRecordProcessor, LoggerProvider } from '@opentelemetry/sdk-logs';
+import { after } from 'next/server';
 
 let loggerProvider: LoggerProvider | undefined;
 
@@ -43,4 +44,11 @@ export function initializePostHogLogs() {
 export function getPostHogLogger() {
   initializePostHogLogs();
   return loggerProvider?.getLogger('next-js-demo.posthog');
+}
+
+export function flushPostHogLogsAfterResponse() {
+  const provider = loggerProvider;
+  if (provider) {
+    after(() => provider.forceFlush());
+  }
 }
