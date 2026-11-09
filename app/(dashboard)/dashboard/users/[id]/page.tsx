@@ -1,7 +1,18 @@
+import { SeverityNumber } from '@opentelemetry/api-logs';
 import { Suspense } from 'react';
+import { getPostHogLogger } from '@/lib/posthog-logs';
 
 const UserData = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
+
+  getPostHogLogger()?.emit({
+    body: 'Dashboard user details rendered',
+    severityNumber: SeverityNumber.INFO,
+    attributes: {
+      dashboard_section: 'users',
+      route: '/dashboard/users/[id]',
+    },
+  });
 
   return <div>UserDetails #{id}</div>;
 };
