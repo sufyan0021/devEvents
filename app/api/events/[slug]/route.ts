@@ -53,11 +53,7 @@ export async function GET(
       { status: 200 },
     );
   } catch (error) {
-    // Log error for debugging (only in development)
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error fetching events by slug:', error);
-    }
-
+    console.error('Error fetching events by slug:', error);
     // Handle specific error types
     if (error instanceof Error) {
       // Handle database connection errors
@@ -68,9 +64,9 @@ export async function GET(
         );
       }
 
-      // Return generic error with error message
+      // Return a generic error without exposing internal details
       return NextResponse.json(
-        { message: 'Failed to fetch events', error: error.message },
+        { message: 'Failed to fetch events' },
         { status: 500 },
       );
     }
