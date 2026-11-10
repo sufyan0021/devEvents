@@ -1,9 +1,9 @@
-'use cache';
-
 import { notFound } from 'next/navigation';
+import { connection } from 'next/server';
 import Image from 'next/image';
 import BookEvent from '@/components/BookEvent';
 import { IEvent } from '@/database';
+import { Suspense } from 'react';
 
 import EventCard from '@/components/EventCard';
 import { getSimilarEventsBySlug } from '@/lib/actions/event.actions';
@@ -52,6 +52,7 @@ const EventDetailsPage = async ({
   params: Promise<{ slug: string }>;
 }) => {
   const { slug } = await params;
+  await connection();
 
   let event;
   try {
@@ -160,7 +161,7 @@ const EventDetailsPage = async ({
               <p className="text-sm">Be the first to book your spot!</p>
             )}
 
-            <BookEvent />
+            <BookEvent eventId={event._id} slug={event.slug} />
           </div>
         </aside>
       </div>
@@ -185,4 +186,16 @@ const EventDetailsPage = async ({
     </section>
   );
 };
-export default EventDetailsPage;
+
+const EventDetailsWrapper = ({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) => {
+  return (
+    <Suspense fallback={<p>Loading...</p>}>
+      <EventDetailsPage params={params} />
+    </Suspense>
+  );
+};
+export default EventDetailsWrapper;
