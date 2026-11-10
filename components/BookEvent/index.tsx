@@ -2,25 +2,45 @@
 
 import { createBooking } from '@/lib/actions/booking.actions';
 import posthog from 'posthog-js';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 const BookEvent = ({ eventId, slug }: { eventId: string; slug: string }) => {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const submissionInProgress = useRef(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    const { success } = await createBooking({
-      eventId,
-      slug,
-      email,
-    });
+    e.preventDefault();
+    if (submissionInProgress.current) return;
 
-    if (success) {
+    submissionInProgress.current = true;
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      const { success } = await createBooking({
+        eventId,
+        slug,
+        email,
+      });
+
+      if (!success) {
+        throw new Error('Booking failed');
+      }
+
       setSubmitted(true);
-      posthog.capture('booking_submitted', { eventId, slug, email });
-    } else {
-      console.error('Booking failed');
-      posthog.captureException(new Error('Booking failed'));
+      posthog.capture('booking_submitted', { eventId, slug });
+    } catch (error) {
+      console.error('Booking failed', error);
+      setError('Booking failed. Please try again.');
+      posthog.captureException(
+        error instanceof Error ? error : new Error('Booking failed'),
+      );
+    } finally {
+      submissionInProgress.current = false;
+      setIsSubmitting(false);
     }
   };
 
@@ -38,11 +58,18 @@ const BookEvent = ({ eventId, slug }: { eventId: string; slug: string }) => {
               onChange={(e) => setEmail(e.target.value)}
               id="email"
               placeholder="Enter your email address"
+              required
             />
           </div>
 
-          <button type="submit" className="button-submit">
-            Submit
+          {error && <p role="alert">{error}</p>}
+
+          <button
+            type="submit"
+            className="button-submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit'}
           </button>
         </form>
       )}
