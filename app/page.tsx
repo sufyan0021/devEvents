@@ -9,12 +9,12 @@ const BASE_URI = process.env.NEXT_PUBLIC_BASE_URL;
 const FeaturedEvents = async () => {
   'use cache';
   cacheLife('hours');
-  const response = await fetch(`${BASE_URI}/api/events`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+
+  if (!BASE_URI) {
+    throw new Error('NEXT_PUBLIC_BASE_URL is not set');
+  }
+
+  const response = await fetch(`${BASE_URI}/api/events`);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch events: ${response.status}`);
@@ -29,7 +29,7 @@ const FeaturedEvents = async () => {
         {events?.length > 0 &&
           events.map((event: IEvent) => (
             <EventCard
-              key={event.title}
+              key={event.slug}
               title={event.title}
               image={event.image}
               location={event.location}
